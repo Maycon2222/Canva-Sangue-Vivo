@@ -9,11 +9,14 @@ Apresentar, em formato visual e profissional, o modelo de negócio do projeto, i
 ## Estrutura
 
 - `business-model-canvas.html`: arquivo principal, pronto para abrir no navegador.
+- `fluxograma-sistema.html`: pagina independente com fluxograma detalhado da jornada do usuario, fluxo administrativo e arquitetura tecnica.
 - `.gitignore`: regras básicas para evitar arquivos temporários no repositório.
 
 ## Como visualizar
 
 Abra o arquivo `business-model-canvas.html` diretamente no navegador.
+
+Para visualizar o fluxograma, abra `fluxograma-sistema.html`.
 
 Também é possível servir a pasta com qualquer servidor estático simples, por exemplo:
 

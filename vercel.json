@@ -3,6 +3,10 @@
     {
       "source": "/",
       "destination": "/business-model-canvas.html"
+    },
+    {
+      "source": "/fluxograma",
+      "destination": "/fluxograma-sistema.html"
     }
   ]
 }
