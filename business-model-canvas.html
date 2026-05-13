@@ -1,0 +1,797 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Canvas Business Model | Sangue Vivo</title>
+    <style>
+      :root {
+        --primary: #dc2626;
+        --primary-dark: #991b1b;
+        --coral: #ef4444;
+        --ink: #1f2937;
+        --muted: #6b7280;
+        --line: #fee2e2;
+        --paper: #fffaf8;
+        --card: #ffffff;
+        --soft: #fef2f2;
+        --amber: #f59e0b;
+        --green: #16a34a;
+        --blue: #2563eb;
+        --slate: #172033;
+        --shadow: 0 24px 70px rgba(127, 29, 29, 0.14);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Inter", "Segoe UI", Arial, sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 8% -10%, rgba(220, 38, 38, 0.18), transparent 30rem),
+          radial-gradient(circle at 100% 8%, rgba(37, 99, 235, 0.1), transparent 24rem),
+          linear-gradient(180deg, #fff7f5 0%, #f8fafc 46%, #f1f5f9 100%);
+      }
+
+      .page {
+        width: min(1420px, calc(100% - 36px));
+        margin: 0 auto;
+        padding: 28px 0 46px;
+      }
+
+      .hero {
+        position: relative;
+        overflow: hidden;
+        border-radius: 28px;
+        color: white;
+        background:
+          linear-gradient(135deg, rgba(23, 32, 51, 0.92), rgba(153, 27, 27, 0.94) 44%, var(--primary)),
+          linear-gradient(135deg, var(--primary-dark), var(--primary));
+        box-shadow: var(--shadow);
+      }
+
+      .hero::after {
+        content: "";
+        position: absolute;
+        inset: auto -10% -42% auto;
+        width: 520px;
+        height: 520px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.11);
+      }
+
+      .hero-inner {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: 1.55fr 0.82fr;
+        gap: 28px;
+        padding: 34px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        width: fit-content;
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        border-radius: 999px;
+        padding: 8px 14px;
+        background: rgba(255, 255, 255, 0.13);
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .hero h1 {
+        margin: 18px 0 12px;
+        font-size: clamp(2.45rem, 5vw, 4.8rem);
+        line-height: 0.95;
+        letter-spacing: 0;
+      }
+
+      .hero p {
+        max-width: 760px;
+        margin: 0;
+        color: rgba(255, 255, 255, 0.88);
+        font-size: 1.05rem;
+        line-height: 1.75;
+      }
+
+      .hero-panel {
+        align-self: stretch;
+        display: grid;
+        gap: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        border-radius: 22px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(10px);
+      }
+
+      .metric {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .metric-mark,
+      .icon {
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.2);
+        font-weight: 900;
+      }
+
+      .metric strong {
+        display: block;
+        color: white;
+        font-size: 0.98rem;
+      }
+
+      .metric span {
+        color: rgba(255, 255, 255, 0.78);
+        font-size: 0.86rem;
+      }
+
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        justify-content: space-between;
+        margin: 18px 0 8px;
+      }
+
+      .note {
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .print-btn {
+        border: 0;
+        border-radius: 14px;
+        padding: 12px 18px;
+        color: white;
+        background: var(--primary);
+        font-weight: 800;
+        cursor: pointer;
+        box-shadow: 0 12px 28px rgba(220, 38, 38, 0.22);
+      }
+
+      .section {
+        margin-top: 24px;
+      }
+
+      .section-head {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 16px;
+      }
+
+      .section h2 {
+        margin: 0;
+        color: var(--primary-dark);
+        font-size: clamp(1.45rem, 3vw, 2rem);
+      }
+
+      .section-lead {
+        max-width: 900px;
+        margin: 8px 0 0;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+      }
+
+      .summary-card,
+      .conclusion {
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        padding: 22px;
+        background: rgba(255, 255, 255, 0.88);
+        box-shadow: 0 12px 34px rgba(127, 29, 29, 0.08);
+      }
+
+      .summary-card h3 {
+        margin: 12px 0 8px;
+        font-size: 1rem;
+      }
+
+      .summary-card p,
+      .conclusion p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.65;
+      }
+
+      .canvas {
+        display: grid;
+        grid-template-columns: 1.04fr 1fr 1.34fr 1fr 1.04fr;
+        grid-template-rows: auto auto auto;
+        gap: 12px;
+        align-items: stretch;
+      }
+
+      .block {
+        position: relative;
+        min-height: 0;
+        border: 1px solid #f3d1d1;
+        border-radius: 20px;
+        padding: 16px;
+        background: var(--card);
+        box-shadow: 0 12px 30px rgba(30, 41, 59, 0.08);
+      }
+
+      .block.featured {
+        color: white;
+        background:
+          radial-gradient(circle at 85% 12%, rgba(255, 255, 255, 0.18), transparent 12rem),
+          linear-gradient(160deg, var(--primary-dark), var(--primary));
+        border-color: transparent;
+        box-shadow: var(--shadow);
+      }
+
+      .block.revenue {
+        border-color: rgba(22, 163, 74, 0.3);
+        background: linear-gradient(180deg, #f0fdf4, #ffffff);
+      }
+
+      .block.segment {
+        border-color: rgba(37, 99, 235, 0.28);
+        background: linear-gradient(180deg, #eff6ff, #ffffff);
+      }
+
+      .block.cost {
+        border-color: rgba(245, 158, 11, 0.3);
+        background: linear-gradient(180deg, #fffbeb, #ffffff);
+      }
+
+      .block h3 {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0 0 14px;
+        font-size: 1rem;
+      }
+
+      .block.featured h3,
+      .block.featured li,
+      .block.featured .tag {
+        color: white;
+      }
+
+      .block.featured .icon {
+        background: rgba(255, 255, 255, 0.18);
+        color: white;
+      }
+
+      .block ul {
+        display: grid;
+        gap: 9px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .block li {
+        position: relative;
+        padding-left: 16px;
+        color: #4b5563;
+        font-size: 0.9rem;
+        line-height: 1.46;
+      }
+
+      .block strong {
+        color: #111827;
+      }
+
+      .block.featured strong {
+        color: white;
+      }
+
+      .block li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0.62em;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--primary);
+      }
+
+      .block.featured li::before {
+        background: white;
+      }
+
+      .tag {
+        display: inline-flex;
+        width: fit-content;
+        margin-top: 14px;
+        border-radius: 999px;
+        padding: 6px 10px;
+        color: var(--muted);
+        background: rgba(255, 255, 255, 0.68);
+        font-size: 0.72rem;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .results-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+      }
+
+      .result-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 18px;
+        background: linear-gradient(180deg, #ffffff, #f8fafc);
+        box-shadow: 0 12px 30px rgba(30, 41, 59, 0.08);
+      }
+
+      .result-card h3 {
+        margin: 12px 0 8px;
+        color: #111827;
+        font-size: 0.98rem;
+      }
+
+      .result-card p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.55;
+      }
+
+      .partners {
+        grid-column: 1;
+        grid-row: 1 / span 2;
+      }
+
+      .activities {
+        grid-column: 2;
+        grid-row: 1;
+      }
+
+      .resources {
+        grid-column: 2;
+        grid-row: 2;
+      }
+
+      .value {
+        grid-column: 3;
+        grid-row: 1 / span 2;
+      }
+
+      .relationship {
+        grid-column: 4;
+        grid-row: 1;
+      }
+
+      .channels {
+        grid-column: 4;
+        grid-row: 2;
+      }
+
+      .segments {
+        grid-column: 5;
+        grid-row: 1 / span 2;
+      }
+
+      .costs {
+        grid-column: 1 / span 2;
+        grid-row: 3;
+      }
+
+      .revenues {
+        grid-column: 3 / span 3;
+        grid-row: 3;
+      }
+
+      .footer-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .secondary {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 12px 18px;
+        color: var(--primary-dark);
+        background: white;
+        font-weight: 800;
+        text-decoration: none;
+      }
+
+      @media (max-width: 1080px) {
+        .page {
+          width: min(980px, calc(100% - 28px));
+        }
+
+        .canvas {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          grid-template-rows: none;
+        }
+
+        .partners,
+        .activities,
+        .resources,
+        .value,
+        .relationship,
+        .channels,
+        .segments,
+        .costs,
+        .revenues {
+          grid-column: auto;
+          grid-row: auto;
+          min-height: 0;
+        }
+
+        .value {
+          grid-column: span 2;
+        }
+
+        .segments {
+          grid-column: span 1;
+        }
+
+        .costs,
+        .revenues {
+          grid-column: span 3;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .hero-inner,
+        .summary-grid,
+        .canvas,
+        .results-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .partners,
+        .activities,
+        .resources,
+        .value,
+        .relationship,
+        .channels,
+        .segments,
+        .costs,
+        .revenues {
+          grid-column: auto;
+          grid-row: auto;
+        }
+
+        .block {
+          min-height: auto;
+        }
+
+        .value,
+        .costs,
+        .revenues {
+          grid-column: auto;
+        }
+      }
+
+      @media print {
+        @page {
+          size: A4 landscape;
+          margin: 10mm;
+        }
+
+        body {
+          background: white;
+        }
+
+        .page {
+          width: 100%;
+          padding: 0;
+        }
+
+        .hero {
+          border-radius: 16px;
+        }
+
+        .hero-inner {
+          grid-template-columns: 1.45fr 0.9fr;
+          padding: 22px;
+        }
+
+        .hero h1 {
+          font-size: 2.6rem;
+        }
+
+        .hero p,
+        .section-lead,
+        .summary-card p,
+        .block li,
+        .result-card p,
+        .conclusion p {
+          font-size: 0.78rem;
+          line-height: 1.35;
+        }
+
+        .section {
+          margin-top: 14px;
+        }
+
+        .summary-grid,
+        .results-grid {
+          gap: 8px;
+        }
+
+        .canvas {
+          grid-template-columns: 1.04fr 1fr 1.34fr 1fr 1.04fr;
+          gap: 7px;
+        }
+
+        .block,
+        .summary-card,
+        .result-card,
+        .conclusion {
+          break-inside: avoid;
+          page-break-inside: avoid;
+          border-radius: 12px;
+          padding: 10px;
+        }
+
+        .block h3 {
+          margin-bottom: 8px;
+          font-size: 0.78rem;
+        }
+
+        .icon,
+        .metric-mark {
+          width: 28px;
+          height: 28px;
+          border-radius: 9px;
+        }
+
+        .hero,
+        .summary-card,
+        .block,
+        .result-card,
+        .conclusion {
+          box-shadow: none;
+        }
+
+        .toolbar,
+        .footer-actions {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero" aria-labelledby="page-title">
+        <div class="hero-inner">
+          <div>
+            <span class="eyebrow">Canvas Business Model</span>
+            <h1 id="page-title">Sangue Vivo</h1>
+            <p>
+              Plataforma digital para gerenciar, mobilizar e engajar doadores de sangue em ambientes
+              academicos, conectando estudantes, hemocentros e campanhas emergenciais com uma jornada
+              gamificada, segura e orientada por dados.
+            </p>
+          </div>
+          <aside class="hero-panel" aria-label="Destaques do projeto">
+            <div class="metric">
+              <span class="metric-mark">01</span>
+              <div><strong>Foco academico</strong><span>Universidades como polos de mobilizacao social.</span></div>
+            </div>
+            <div class="metric">
+              <span class="metric-mark">02</span>
+              <div><strong>e-Health aplicada</strong><span>Cadastro, agendamento, historico e alertas digitais.</span></div>
+            </div>
+            <div class="metric">
+              <span class="metric-mark">03</span>
+              <div><strong>Engajamento continuo</strong><span>Ranks, XP, conquistas e campanhas por causa.</span></div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <div class="toolbar">
+        <span class="note">Documento independente para apresentacao academica e pitch do projeto.</span>
+        <button class="print-btn" onclick="window.print()">Imprimir ou salvar em PDF</button>
+      </div>
+
+      <section class="section" aria-labelledby="executive-summary">
+        <div class="section-head">
+          <div>
+            <h2 id="executive-summary">Resumo executivo</h2>
+            <p class="section-lead">
+              O Sangue Vivo responde a um desafio recorrente da saude publica: manter estoques de
+              sangue suficientes e reduzir o tempo de resposta em situacoes criticas. A proposta usa
+              tecnologia, gamificacao e mobilizacao universitaria para transformar doacoes pontuais
+              em uma comunidade recorrente de doadores.
+            </p>
+          </div>
+        </div>
+        <div class="summary-grid">
+          <article class="summary-card">
+            <span class="icon" style="background:#fee2e2;color:#dc2626">A</span>
+            <h3>Objetivo do projeto</h3>
+            <p>Conectar doadores e demandas de transfusao de forma agil, segura e educativa dentro da comunidade academica.</p>
+          </article>
+          <article class="summary-card">
+            <span class="icon" style="background:#eff6ff;color:#2563eb">B</span>
+            <h3>Problema central</h3>
+            <p>Baixa recorrencia de doadores, comunicacao fragmentada e dificuldade operacional para mobilizar perfis compativeis.</p>
+          </article>
+          <article class="summary-card">
+            <span class="icon" style="background:#f0fdf4;color:#16a34a">C</span>
+            <h3>Diferencial</h3>
+            <p>Modelo integrado com cadastro, compatibilidade sanguinea, campanhas, historico, notificacoes e gamificacao.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="canvas-title">
+        <h2 id="canvas-title">Business Model Canvas</h2>
+        <p class="section-lead">
+          Os blocos abaixo combinam informacoes extraidas da proposta com hipoteses estrategicas
+          discretamente sinalizadas quando o documento nao detalha aspectos comerciais.
+        </p>
+
+        <div class="canvas" role="list" aria-label="Business Model Canvas do Sangue Vivo">
+          <article class="block partners" role="listitem">
+            <h3><span class="icon" style="background:#fee2e2;color:#dc2626">P</span>Parcerias principais</h3>
+            <ul>
+              <li><strong>Hemocentros</strong> e unidades de coleta, com destaque para Hemoal Maceio e Hemoal Arapiraca.</li>
+              <li><strong>Universidades</strong> publicas e privadas de Alagoas como polos de campanha e validacao.</li>
+              <li>Equipes de <strong>saude, extensao e comunicacao</strong> institucional.</li>
+              <li>Orgaos de saude publica e iniciativas de <strong>cidadania digital</strong>.</li>
+            </ul>
+          </article>
+
+          <article class="block activities" role="listitem">
+            <h3><span class="icon" style="background:#fff7ed;color:#f97316">A</span>Atividades principais</h3>
+            <ul>
+              <li>Gerenciar <strong>cadastro, elegibilidade e agendamento</strong>.</li>
+              <li>Divulgar campanhas e alertas por <strong>tipo sanguineo</strong>.</li>
+              <li>Operar <strong>gamificacao</strong>, rankings e conquistas.</li>
+              <li>Analisar dados para melhorar <strong>mobilizacao</strong>.</li>
+            </ul>
+          </article>
+
+          <article class="block resources" role="listitem">
+            <h3><span class="icon" style="background:#fef3c7;color:#b45309">R</span>Recursos principais</h3>
+            <ul>
+              <li><strong>Plataforma web</strong> com area do doador, painel admin e mapa.</li>
+              <li>Base de usuarios, tipos sanguineos, campanhas e notificacoes.</li>
+              <li>Equipe tecnica em <strong>React, Node.js, dados e seguranca</strong>.</li>
+              <li>Conteudo educativo sobre doacao e cidadania em saude.</li>
+            </ul>
+          </article>
+
+          <article class="block featured value" role="listitem">
+            <h3><span class="icon">V</span>Proposta de valor</h3>
+            <ul>
+              <li><strong>Reduzir barreiras</strong> da doacao com jornada digital clara: cadastro, agendamento, historico e notificacoes.</li>
+              <li><strong>Conectar perfis compativeis</strong> a campanhas e solicitacoes emergenciais com mais agilidade.</li>
+              <li><strong>Estimular recorrencia</strong> com gamificacao, reconhecimento social e pertencimento academico.</li>
+              <li><strong>Apoiar hemocentros</strong> com mobilizacao segmentada e dados para decisao.</li>
+            </ul>
+            <span class="tag">Bloco central do modelo</span>
+          </article>
+
+          <article class="block relationship" role="listitem">
+            <h3><span class="icon" style="background:#fce7f3;color:#db2777">C</span>Relacionamento</h3>
+            <ul>
+              <li>Experiencia personalizada por <strong>tipo sanguineo</strong> e elegibilidade.</li>
+              <li>Notificacoes de campanhas, lembretes e causas compativeis.</li>
+              <li>Reconhecimento por <strong>ranks, XP e conquistas</strong>.</li>
+              <li>Suporte e comunicacao educativa para reduzir duvidas e abandono.</li>
+            </ul>
+          </article>
+
+          <article class="block channels" role="listitem">
+            <h3><span class="icon" style="background:#e0f2fe;color:#0284c7">N</span>Canais</h3>
+            <ul>
+              <li><strong>Aplicacao web responsiva</strong> para celular, tablet e desktop.</li>
+              <li>Campanhas internas em universidades, cursos, atléticas e projetos de extensao.</li>
+              <li>Notificacoes in-app e comunicacoes digitais institucionais.</li>
+              <li>Mapa de hemocentros e paginas educativas.</li>
+            </ul>
+          </article>
+
+          <article class="block segment segments" role="listitem">
+            <h3><span class="icon" style="background:#dbeafe;color:#1d4ed8">S</span>Segmentos de clientes</h3>
+            <ul>
+              <li><strong>Estudantes universitarios</strong> de Maceio e Alagoas.</li>
+              <li>Hemocentros e equipes de saude que precisam mobilizar doadores compativeis.</li>
+              <li>Universidades com foco em <strong>extensao e impacto social</strong>.</li>
+              <li>Pacientes e familiares beneficiados indiretamente.</li>
+            </ul>
+            <span class="tag">Publico-alvo prioritario</span>
+          </article>
+
+          <article class="block cost costs" role="listitem">
+            <h3><span class="icon" style="background:#fef3c7;color:#b45309">E</span>Estrutura de custos</h3>
+            <ul>
+              <li><strong>Desenvolvimento e manutencao</strong> da plataforma.</li>
+              <li>Hospedagem, banco de dados, monitoramento e backups.</li>
+              <li>Seguranca, adequacao a <strong>LGPD</strong> e controle de acesso.</li>
+              <li>Conteudo, suporte, capacitacao e campanhas academicas.</li>
+            </ul>
+            <span class="tag">Hipotese estrategica</span>
+          </article>
+
+          <article class="block revenue revenues" role="listitem">
+            <h3><span class="icon" style="background:#dcfce7;color:#15803d">F</span>Fontes de receita</h3>
+            <ul>
+              <li><strong>B2B/B2G:</strong> licenciamento para universidades, hemocentros e orgaos publicos.</li>
+              <li>Projetos de extensao, editais de inovacao, saude digital e parcerias com secretarias de saude.</li>
+              <li>Patrocinios institucionais para campanhas educativas, sem venda de dados pessoais.</li>
+              <li>Servicos de implantacao, treinamento e personalizacao.</li>
+            </ul>
+            <span class="tag">Hipotese estrategica</span>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="results-title">
+        <h2 id="results-title">Resultados esperados</h2>
+        <p class="section-lead">
+          Indicadores qualitativos do impacto estrategico esperado a partir da implantacao da plataforma.
+        </p>
+        <div class="results-grid">
+          <article class="result-card">
+            <span class="icon" style="background:#fee2e2;color:#dc2626">1</span>
+            <h3>Maior recorrencia de doacoes</h3>
+            <p>Gamificacao, lembretes e historico ajudam a transformar participacao pontual em habito continuo.</p>
+          </article>
+          <article class="result-card">
+            <span class="icon" style="background:#fff7ed;color:#f97316">2</span>
+            <h3>Resposta emergencial mais rapida</h3>
+            <p>Alertas segmentados por compatibilidade reduzem atrito na mobilizacao de doadores prioritarios.</p>
+          </article>
+          <article class="result-card">
+            <span class="icon" style="background:#eff6ff;color:#2563eb">3</span>
+            <h3>Conexao com hemocentros</h3>
+            <p>Mapa, campanhas e causas aproximam estudantes das unidades de coleta e demandas reais.</p>
+          </article>
+          <article class="result-card">
+            <span class="icon" style="background:#f0fdf4;color:#16a34a">4</span>
+            <h3>Comunicacao mais eficiente</h3>
+            <p>Mensagens direcionadas melhoram entendimento, engajamento e tomada de decisao dos participantes.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section conclusion" aria-labelledby="conclusion-title">
+        <h2 id="conclusion-title">Conclusao estrategica</h2>
+        <p>
+          O Sangue Vivo possui potencial para atuar como infraestrutura de mobilizacao social em saude,
+          iniciando pelo ambiente academico e evoluindo para um modelo replicavel em outras instituicoes.
+          A combinacao entre e-Health, gamificacao, dados e parcerias locais cria um caminho realista para
+          aumentar recorrencia, reduzir atrasos em campanhas emergenciais e fortalecer a cultura de doacao.
+        </p>
+        <div class="footer-actions">
+          <button class="print-btn" onclick="window.print()">Imprimir ou exportar PDF</button>
+          <a class="secondary" href="./index.html">Abrir site do projeto</a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
